@@ -2,6 +2,9 @@ package weaksubjectivity
 
 import (
 	"context"
+	"github.com/prysmaticlabs/prysm/v3/cmd"
+	"github.com/prysmaticlabs/prysm/v3/config/features"
+	"github.com/prysmaticlabs/prysm/v3/runtime/tos"
 	"fmt"
 	"time"
 
@@ -32,6 +35,16 @@ var checkpointCmd = &cli.Command{
 			Destination: &checkpointFlags.Timeout,
 			Value:       time.Minute * 2,
 		},
+		cmd.ChainConfigFileFlag,
+	},
+	Before: func(cliCtx *cli.Context) error {
+		if err := cmd.LoadFlagsFromConfig(cliCtx, cliCtx.Command.Flags); err != nil {
+			return err
+		}
+		if err := tos.VerifyTosAcceptedOrPrompt(cliCtx); err != nil {
+			return err
+		}
+		return features.ConfigureValidator(cliCtx)
 	},
 }
 
